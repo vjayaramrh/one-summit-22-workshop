@@ -3,6 +3,30 @@
 ## SPDX-License-Identifier: Apache-2.0
 
 ---
+- name: setup apt repo
+  block:
+    - name: kubic podman repo key add
+      ansible.builtin.get_url:
+        url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ ansible_distribution_version }}/Release.key"
+        dest: /etc/apt/trusted.gpg.d/kubic.key
+
+    - name: kubic podman repo apt source
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/kubic.key] https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ ansible_distribution_version }}/ /"
+        state: present
+    - name: Unmask and enable podman.socket
+      ansible.builtin.systemd:
+        name: podman.socket
+        enabled: true
+        masked: no
+    - name: Unmask, Enable and start podman.service
+      ansible.builtin.systemd:
+        name: podman.service
+        enabled: true
+        masked: no
+  when: ansible_distribution == 'Ubuntu'
+
+
 - name: installing podman
   become: true
   ansible.builtin.package:
