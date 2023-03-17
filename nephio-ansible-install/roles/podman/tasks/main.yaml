@@ -14,6 +14,16 @@
       ansible.builtin.apt_repository:
         repo: "deb [signed-by=/etc/apt/trusted.gpg.d/kubic.key] https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ ansible_distribution_version }}/ /"
         state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: installing podman
+  become: true
+  ansible.builtin.package:
+    name: "podman"
+    state: latest
+
+- name: enable podman systemd units on Ubuntu
+  block:
     - name: Unmask and enable podman.socket
       ansible.builtin.systemd:
         name: podman.socket
@@ -25,13 +35,6 @@
         enabled: true
         masked: no
   when: ansible_distribution == 'Ubuntu'
-
-
-- name: installing podman
-  become: true
-  ansible.builtin.package:
-    name: "podman"
-    state: latest
 
 - name: create podman network for kind
   containers.podman.podman_network:
